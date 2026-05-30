@@ -1,0 +1,35 @@
+services:
+  llama-server:
+    build: ./llama-server
+    container_name: llama-server
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./models:/models:ro
+    command: >
+      -m /models/${MODEL_FILE:-Qwen3.6-27B-Q4_K_M.gguf}
+      --host 0.0.0.0
+      --port 8080
+      --ctx-size ${CTX_SIZE:-16384}
+      --n-gpu-layers ${N_GPU_LAYERS:-99}
+      --threads 4
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  telegram-bot:
+    build: ./telegram-bot
+    container_name: telegram-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_USER_ID=${TELEGRAM_USER_ID}
+    depends_on:
+      - llama-server
