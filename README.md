@@ -2,7 +2,7 @@
 
 > **Work in Progress** — this project is actively being built out. Features and documentation may be incomplete or subject to change.
 
-Run the Qwen3.6-27B language model locally using llama.cpp in a Docker container and expose it via a Telegram bot. Users send messages to a Telegram bot, which forwards them to the llama.cpp inference server and returns the model's response.
+Run the Qwen3.6-27B language model locally using llama.cpp in a Docker container and expose it via a Telegram bot. Users send messages to a Telegram bot, which forwards them to the llama.cpp inference server and returns the model's response. Messages can optionally be routed through LangChain or LangGraph instead of the raw HTTP call — see [Message Modes](#message-modes).
 
 ---
 
@@ -116,6 +116,18 @@ Send any message to your Telegram bot and it will respond.
 
 ---
 
+## Message Modes
+
+Prefix a message to route it through a different code path:
+
+| Prefix | Mode | Behavior |
+|---|---|---|
+| *(none)* | raw | Direct HTTP call to `llama-server`. Stateless, single-turn. Default behavior. |
+| `//chain <text>` | LangChain | A LangChain LCEL chain against the same `llama-server` endpoint. Stateless, single-turn. |
+| `//graph <text>` | LangGraph | A LangGraph agent with per-chat conversation memory (in-process, cleared on restart) — the only mode that remembers earlier turns in the same chat. |
+
+---
+
 ## Monitoring
 
 ```powershell
@@ -148,6 +160,8 @@ docker-compose down                 # stop everything
 - [x] Create Docker container
 - [x] Run LLM Model in Docker container with llama server
 - [x] Set up Telegram bot
+- [x] Add langchain and langgraph capabilities
+- [ ] Add tools and nodes for langchain and langgraph
 - [ ] Add Obsidian MCP capabilities — connect the bot to an Obsidian vault via MCP so it can read and write notes, search knowledge base entries, and surface relevant context in responses
 - [ ] Build custom MCP client and server — implement a personal MCP client/server from scratch and progressively add tools (e.g. web search, file I/O, calendar, shell commands) to extend what the bot can do
 
